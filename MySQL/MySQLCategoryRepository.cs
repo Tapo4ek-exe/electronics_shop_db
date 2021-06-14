@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.MySQL
+namespace MySQL
 {
     public class MySQLCategoryRepository : ICategoryRepository
     {
