@@ -23,21 +23,31 @@ namespace ClientApplication
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static IProductRepository ProductRepository = new MySQLProductRepository();
-        public static ICategoryRepository CategoryRepository = new MySQLCategoryRepository();
-        public int state = 1;
+        public static IProductRepository ProductRepository = new MySQLProductRepository();      // база товаров
+        public static ICategoryRepository CategoryRepository = new MySQLCategoryRepository();   // база категорий
+        public int state = 1;   // выбранная база: 1 - товары, 2 - категории
 
         public MainWindow()
         {
             InitializeComponent();
+            MinHeight = Height;
+            MinWidth = Width;
             dataGrid.MaxColumnWidth = 200;
-            radioButton.IsChecked = true;
+            ProductRadioButton.IsChecked = true;
+            DescriptionTextBox.VerticalScrollBarVisibility = ScrollBarVisibility.Auto;
         }
 
-        private void button2_Click(object sender, RoutedEventArgs e)    // Удаление записи
+        private void dataGrid_SizeChanged(object sender, RoutedEventArgs e)
         {
+            if(!Double.IsNaN(dataGrid.ActualWidth))
+                dataGrid.MaxColumnWidth = dataGrid.ActualWidth / 3;
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)    // удаление записи
+        {
+            int oldIndex = dataGrid.SelectedIndex;      // сохранение текущего индекса таблицы
             if (state == 1)
-            {
+            {              
                 Product product = (Product)dataGrid.SelectedItem;
                 ProductRepository.Delete(product.ID);
                 dataGrid.ItemsSource = ProductRepository.GetAll();
@@ -58,14 +68,24 @@ namespace ClientApplication
                 CategoryRepository.Delete(category.ID);
                 dataGrid.ItemsSource = CategoryRepository.GetAll();
             }
+
+            // Смещение выбранной строки в таблице
+            if (oldIndex < dataGrid.Items.Count)
+                dataGrid.SelectedIndex = oldIndex;
+            else if (dataGrid.Items.Count > 0)
+                dataGrid.SelectedIndex = dataGrid.Items.Count - 1;
+
+            dataGrid.ScrollIntoView(dataGrid.SelectedItem);
+            dataGrid_MouseUp(this, new RoutedEventArgs());
         }
 
-        private void button3_Click(object sender, RoutedEventArgs e)    // обновление информации о записи
+        private void SaveButton_Click(object sender, RoutedEventArgs e)    // обновление информации о записи
         {
             try
             {
                 if (state == 1)
                 {
+                    // Проверка полей
                     if (ProductIsEmpty())
                     {
                         MessageBox.Show("Введены не все поля");
@@ -73,20 +93,21 @@ namespace ClientApplication
                     }
 
                     int id = ((Product)dataGrid.SelectedItem).ID;
-                    Product product = new Product(id, textBox.Text, textBox2.Text, textBox3.Text, new Category(CategoryRepository.GetCategoryID(textBox1_Copy.Text), textBox1_Copy.Text));
+                    Product product = new Product(id, NameTextBox.Text, ModelTextBox.Text, DescriptionTextBox.Text, new Category(CategoryRepository.GetCategoryID(CategoryСomboBox1.Text), CategoryСomboBox1.Text));
                     ProductRepository.Update(product);
                     dataGrid.ItemsSource = ProductRepository.GetAll();
                 }
                 else
                 {
-                    if (String.IsNullOrWhiteSpace(textBox.Text))
+                    // Проверка имени категории
+                    if (String.IsNullOrWhiteSpace(NameTextBox.Text))
                     {
                         MessageBox.Show("Введены не все поля");
                         return;
                     }
 
                     int id = ((Category)dataGrid.SelectedItem).ID;
-                    Category category = new Category(id, textBox.Text);
+                    Category category = new Category(id, NameTextBox.Text);
                     CategoryRepository.Update(category);
                     dataGrid.ItemsSource = CategoryRepository.GetAll();
                 }
@@ -97,74 +118,84 @@ namespace ClientApplication
             }
         }
 
-        private void button4_Click(object sender, RoutedEventArgs e)    // товары заданной компании
+        private void ShowProductsOfCompany_Click(object sender, RoutedEventArgs e)    // товары заданной компании
         {
-            Product [] products = ProductRepository.allProductsOfCompany(textBox1.Text);
+            Product [] products = ProductRepository.allProductsOfCompany(CompanyTextBox.Text);
             dataGrid.ItemsSource = products;
         }
 
-        private void button5_Click(object sender, RoutedEventArgs e)    // товары заданной категории
+        private void ShowProductsInCategory_Click(object sender, RoutedEventArgs e)    // товары заданной категории
         {
-            Product[] products = ProductRepository.allProductsInCategory(CategoryRepository.GetCategoryID(textBox4.Text));
+            Product[] products = ProductRepository.allProductsInCategory(CategoryRepository.GetCategoryID(CategoryСomboBox2.Text));
             dataGrid.ItemsSource = products;
         }
 
-        private void radioButton_Checked(object sender, RoutedEventArgs e)  // выбор базы товаров
+        private void ProductRadioButton_Checked(object sender, RoutedEventArgs e)  // выбор базы товаров
         {
             state = 1;
+            
+            // Настройка видимости элементов
+            ModelLabel.Visibility = Visibility.Visible;
+            ModelTextBox.Visibility = Visibility.Visible;
 
-            label3.Visibility = Visibility.Visible;
-            textBox3.Visibility = Visibility.Visible;
+            DescriptionLabel.Visibility = Visibility.Visible;
+            DescriptionTextBox.Visibility = Visibility.Visible;
 
-            label4.Visibility = Visibility.Visible;
-            textBox2.Visibility = Visibility.Visible;
-
-            label2.Visibility = Visibility.Visible;
-            textBox3.Visibility = Visibility.Visible;
-
-            textBox1_Copy.Visibility = Visibility.Visible;
+            CategoryLabel1.Visibility = Visibility.Visible;
+            CategoryСomboBox1.Visibility = Visibility.Visible;
 
             StackPanel1.Visibility = Visibility.Visible;
             StackPanel2.Visibility = Visibility.Visible;
 
-            textBox.Clear();
-            textBox1.Clear();
-            textBox2.Clear();
-            textBox3.Clear();
-            textBox1_Copy.Clear();
-            textBox4.Clear();
+            ClearButton_Click(this, new RoutedEventArgs());
 
+            // Обновление таблицы
             Product[] products = ProductRepository.GetAll();
             dataGrid.ItemsSource = products;
+            if (dataGrid.Items.Count > 0)
+            {
+                dataGrid.SelectedIndex = 0;
+                dataGrid.ScrollIntoView(dataGrid.SelectedItem);
+                dataGrid_MouseUp(this, new RoutedEventArgs());
+            }
+
+            // Обновление списка категорий
+            Category[] categories = CategoryRepository.GetAll();
+            List <string> categoriesNames = new List<string>();
+            foreach (Category category in categories)
+                categoriesNames.Add(category.Name);
+            CategoryСomboBox1.ItemsSource = categoriesNames;
+            CategoryСomboBox2.ItemsSource = categoriesNames;
         }
 
-        private void radioButton1_Checked(object sender, RoutedEventArgs e) // выбор базы категорий
+        private void CategoryRadioButton_Checked(object sender, RoutedEventArgs e) // выбор базы категорий
         {
             state = 2;
 
-            label3.Visibility = Visibility.Hidden;
-            textBox3.Visibility = Visibility.Hidden;
+            // Настройка видимости элементов
+            ModelLabel.Visibility = Visibility.Hidden;
+            ModelTextBox.Visibility = Visibility.Hidden;
 
-            label4.Visibility = Visibility.Hidden;
-            textBox2.Visibility = Visibility.Hidden;
+            DescriptionLabel.Visibility = Visibility.Hidden;
+            DescriptionTextBox.Visibility = Visibility.Hidden;
 
-            label2.Visibility = Visibility.Hidden;
-            textBox3.Visibility = Visibility.Hidden;
-
-            textBox1_Copy.Visibility = Visibility.Hidden;
+            CategoryLabel1.Visibility = Visibility.Hidden;
+            CategoryСomboBox1.Visibility = Visibility.Hidden;
 
             StackPanel1.Visibility = Visibility.Hidden;
             StackPanel2.Visibility = Visibility.Hidden;
 
-            textBox.Clear();
-            textBox1.Clear();
-            textBox2.Clear();
-            textBox3.Clear();
-            textBox1_Copy.Clear();
-            textBox4.Clear();
+            ClearButton_Click(this, new RoutedEventArgs());
 
+            // Обновление таблицы
             Category[] categories = CategoryRepository.GetAll();
             dataGrid.ItemsSource = categories;
+            if (dataGrid.Items.Count > 0)
+            {
+                dataGrid.SelectedIndex = 0;
+                dataGrid.ScrollIntoView(dataGrid.SelectedItem);
+                dataGrid_MouseUp(this, new RoutedEventArgs());
+            }
         }
 
         private void dataGrid_MouseUp(object sender, RoutedEventArgs e) // отображение информации о текущей записи
@@ -172,19 +203,19 @@ namespace ClientApplication
             if (state == 1)
             {
                 Product product = (Product)dataGrid.SelectedItem;
-                textBox.Text = product.Name;
-                textBox2.Text = product.Model;
-                textBox3.Text = product.Description;
-                textBox1_Copy.Text = product.Category.Name;
+                NameTextBox.Text = product.Name;
+                ModelTextBox.Text = product.Model;
+                DescriptionTextBox.Text = product.Description;
+                CategoryСomboBox1.Text = product.Category.Name;
             }
             else
             {
                 Category category = (Category)dataGrid.SelectedItem;
-                textBox.Text = category.Name;
+                NameTextBox.Text = category.Name;
             }
         }
 
-        private void button_Click(object sender, RoutedEventArgs e) // создание новой записи
+        private void CreateButton_Click(object sender, RoutedEventArgs e) // создание новой записи
         {
             if (state == 1)
             {
@@ -194,31 +225,45 @@ namespace ClientApplication
                     return;
                 }
 
-                Product product = new Product(0, textBox.Text, textBox2.Text, textBox3.Text, new Category(CategoryRepository.GetCategoryID(textBox1_Copy.Text), textBox1_Copy.Text));
+                int oldIndex = dataGrid.SelectedIndex;
+                Product product = new Product(0, NameTextBox.Text, ModelTextBox.Text, DescriptionTextBox.Text, new Category(CategoryRepository.GetCategoryID(CategoryСomboBox1.Text), CategoryСomboBox1.Text));
                 ProductRepository.Add(product);
-                dataGrid.ItemsSource = ProductRepository.GetAll();
+                dataGrid.ItemsSource = ProductRepository.GetAll();  
             }
             else
             {
-                if (String.IsNullOrWhiteSpace(textBox.Text))
+                if (String.IsNullOrWhiteSpace(NameTextBox.Text))
                 {
                     MessageBox.Show("Введены не все поля");
                     return;
                 }
 
-                Category category = new Category(0, textBox.Text);
+                Category category = new Category(0, NameTextBox.Text);
                 CategoryRepository.Add(category);
                 dataGrid.ItemsSource = CategoryRepository.GetAll();
             }
-            dataGrid.SelectedItem = dataGrid.Items[dataGrid.Items.Count - 1];
+
+            dataGrid.SelectedIndex = dataGrid.Items.Count - 1;
+            dataGrid.ScrollIntoView(dataGrid.Items[dataGrid.Items.Count - 1]);
+            dataGrid_MouseUp(this, new RoutedEventArgs());
         }
 
-        private bool ProductIsEmpty()
+        private bool ProductIsEmpty()   // проверка полей инормации о товаре
         {
-            return String.IsNullOrWhiteSpace(textBox.Text) ||
-                    String.IsNullOrWhiteSpace(textBox2.Text) || 
-                    String.IsNullOrWhiteSpace(textBox1_Copy.Text) || 
-                    (CategoryRepository.GetCategoryID(textBox1_Copy.Text) == 0);
+            return String.IsNullOrWhiteSpace(NameTextBox.Text) ||
+                    String.IsNullOrWhiteSpace(ModelTextBox.Text) || 
+                    String.IsNullOrWhiteSpace(CategoryСomboBox1.Text) || 
+                    (CategoryRepository.GetCategoryID(CategoryСomboBox1.Text) == 0);
+        }
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)    // очистка полей
+        {
+            NameTextBox.Clear();
+            ModelTextBox.Clear();
+            DescriptionTextBox.Clear();
+            CategoryСomboBox1.SelectedIndex = 0;
+            CategoryСomboBox2.SelectedIndex = 0;
+            CompanyTextBox.Clear();
         }
     }
 }

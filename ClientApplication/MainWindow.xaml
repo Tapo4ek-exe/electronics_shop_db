@@ -6,41 +6,48 @@
         xmlns:local="clr-namespace:ClientApplication"
         mc:Ignorable="d"
         Title="Lab_07" Height="700" Width="1000">
-    <Grid HorizontalAlignment="Right" Width="981">
+    <Grid HorizontalAlignment="Stretch" Margin="10,10,10,10">
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="452*"/>
-            <ColumnDefinition Width="341*"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" ItemsSource="{DynamicResource ResourceKey=phones}" HorizontalAlignment="Left" Margin="10,10,0,10.4" Width="689" Grid.ColumnSpan="2" MouseUp="dataGrid_MouseUp"/>
-        <Grid Grid.Column="1" HorizontalAlignment="Stretch" Height="648" Margin="143,25,5,0" VerticalAlignment="Stretch" Width="273">
-            <Button x:Name="button2" Content="Удалить" HorizontalAlignment="Left" Margin="11,578,0,0" VerticalAlignment="Top" Width="74" Height="22" RenderTransformOrigin="0.922,0.56" Click="button2_Click"/>
-            <Button x:Name="button3" Content="Сохранить" HorizontalAlignment="Left" Margin="188,578,0,0" VerticalAlignment="Top" Width="75" Height="22" Click="button3_Click"/>
-            <RadioButton x:Name="radioButton" Content="Товары" HorizontalAlignment="Left" Margin="6,304,0,0" VerticalAlignment="Top" Checked="radioButton_Checked"/>
-            <RadioButton x:Name="radioButton1" Content="Категории" HorizontalAlignment="Left" Margin="6,324,0,0" VerticalAlignment="Top" Checked="radioButton1_Checked"/>
-            <GroupBox x:Name="groupBox" Header="Информация о записи:" Margin="5,0,0,0" VerticalAlignment="Top" Height="292">
-                <StackPanel>
-                    <Label x:Name="label" Content="Название:" RenderTransformOrigin="0.209,0.164"/>
-                    <TextBox x:Name="textBox" Height="23" TextWrapping="Wrap" HorizontalAlignment="Stretch"/>
-                    <Label x:Name="label3" Content="Модель:"/>
-                    <TextBox x:Name="textBox2" TextWrapping="Wrap" Height="22"/>
-                    <Label x:Name="label4" Content="Описание:"/>
-                    <TextBox x:Name="textBox3" TextWrapping="Wrap" Height="88"/>
-                    <Label x:Name="label2" Content="Категория:" Height="27" Width="256"/>
-                    <TextBox x:Name="textBox1_Copy" TextWrapping="Wrap" Height="24" Width="256"/>
+        <DataGrid x:Name="dataGrid" AutoGenerateColumns="True" Margin="0,0,310,0" MouseUp="dataGrid_MouseUp" SelectionMode="Single" IsReadOnly="True" VerticalAlignment="Stretch" HorizontalAlignment="Stretch" SizeChanged="dataGrid_SizeChanged" IsSynchronizedWithCurrentItem="True"/>
+        <StackPanel HorizontalAlignment="Right" Orientation="Vertical" VerticalAlignment="Stretch" Margin="0,0,0,0" Width="300">
+            <GroupBox x:Name="groupBox" Header="Информация о записи:" Margin="0,0,0,20">
+                <StackPanel Margin="0,0,0,10">
+                    <Label x:Name="NameLabel" Content="Название:" RenderTransformOrigin="0.209,0.164"/>
+                    <TextBox x:Name="NameTextBox" Height="23" TextWrapping="Wrap" HorizontalAlignment="Stretch"/>
+                    <Label x:Name="ModelLabel" Content="Модель:"/>
+                    <TextBox x:Name="ModelTextBox" TextWrapping="Wrap" Height="22"/>
+                    <Label x:Name="DescriptionLabel" Content="Описание:"/>
+                    <TextBox x:Name="DescriptionTextBox" TextWrapping="Wrap" Height="100"/>
+                    <Label x:Name="CategoryLabel1" Content="Категория:" Height="27" Width="256"/>
+                    <ComboBox x:Name="CategoryСomboBox1" Height="22"/>
                 </StackPanel>
             </GroupBox>
-            <StackPanel x:Name="StackPanel1" HorizontalAlignment="Right" Margin="0,0,0,189" Orientation="Vertical" VerticalAlignment="Bottom">
-                <Label x:Name="label1" Content="Компания:" Height="27"/>
-                <TextBox x:Name="textBox1" TextWrapping="Wrap" Height="22" Width="267" Margin="0,0,0,8"/>
-                <Button x:Name="button4" Content="Показать товары компании" Width="171" Height="22" Click="button4_Click"/>
+            <RadioButton x:Name="ProductRadioButton" Content="Товары" Checked="ProductRadioButton_Checked"/>
+            <RadioButton x:Name="CategoryRadioButton" Content="Категории" Checked="CategoryRadioButton_Checked" Margin="0,0,0,20"/>
+            <StackPanel x:Name="StackPanel1" Orientation="Vertical" Margin="0,0,0,20">
+                <Label x:Name="CompanyLabel" Content="Компания:" Height="27"/>
+                <TextBox x:Name="CompanyTextBox" TextWrapping="Wrap" Height="22" Width="267" Margin="0,0,0,10"/>
+                <Button x:Name="ShowProductsOfCompany" Content="Показать товары компании" Width="171" Height="22" Click="ShowProductsOfCompany_Click"/>
             </StackPanel>
-            <StackPanel x:Name="StackPanel2" Margin="11,0,5,105" Orientation="Vertical" VerticalAlignment="Bottom" Height="79" Width="257">
-                <Label x:Name="label5" Content="Категория:"/>
-                <TextBox x:Name="textBox4" TextWrapping="Wrap" Width="267" Height="22" Margin="0,0,0,8"/>
-                <Button x:Name="button5" Content="Показать товары категории" Width="169" Height="21" Click="button5_Click"/>
+            <StackPanel x:Name="StackPanel2" Orientation="Vertical" Height="79" Width="258" Margin="0,0,0,40">
+                <Label x:Name="CategoryLabel2" Content="Категория:"/>
+                <ComboBox x:Name="CategoryСomboBox2" Height="22" Width="256" Margin="0,0,0,10"/>
+                <Button x:Name="ShowProductsInCategory" Content="Показать товары категории" Width="169" Height="21" Click="ShowProductsInCategory_Click"/>
             </StackPanel>
-            <Button x:Name="button" Content="Создать" HorizontalAlignment="Center" Margin="0,578,0,0" VerticalAlignment="Top" Height="22" Width="71" Click="button_Click"/>
-        </Grid>
-        <Grid Grid.Column="1" Margin="346,332,-279,11" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,10">
+                <Button x:Name="ClearButton" Content="Очистить поля" Height="22" Click="ClearButton_Click" Margin="0,0,10,0"/>
+                <Button x:Name="CreateButton" Content="Создать" Height="22" Width="83" Click="CreateButton_Click"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button x:Name="DeleteButton" Content="Удалить" Width="83" Height="22" RenderTransformOrigin="0.922,0.56" Click="DeleteButton_Click" Margin="0,0,10,0"/>
+                <Button x:Name="SaveButton" Content="Сохранить" Width="83" Height="22" Click="SaveButton_Click"/>
+            </StackPanel>
+        </StackPanel>
+        <Grid Margin="0,0,-279,11" VerticalAlignment="Bottom" HorizontalAlignment="Right" Height="0" Width="0"/>
     </Grid>
 </Window>
