@@ -126,8 +126,16 @@ namespace ClientApplication
 
         private void ShowProductsInCategory_Click(object sender, RoutedEventArgs e)    // товары заданной категории
         {
-            Product[] products = ProductRepository.allProductsInCategory(CategoryRepository.GetCategoryID(CategoryСomboBox2.Text));
-            dataGrid.ItemsSource = products;
+            if (CategoryСomboBox2.Text == "Все")
+            {
+                Product[] products = ProductRepository.GetAll();
+                dataGrid.ItemsSource = products;
+            }
+            else
+            {
+                Product[] products = ProductRepository.allProductsInCategory(CategoryRepository.GetCategoryID(CategoryСomboBox2.Text));
+                dataGrid.ItemsSource = products;
+            }
         }
 
         private void ProductRadioButton_Checked(object sender, RoutedEventArgs e)  // выбор базы товаров
@@ -162,6 +170,7 @@ namespace ClientApplication
             // Обновление списка категорий
             Category[] categories = CategoryRepository.GetAll();
             List <string> categoriesNames = new List<string>();
+            categoriesNames.Add("Все");
             foreach (Category category in categories)
                 categoriesNames.Add(category.Name);
             CategoryСomboBox1.ItemsSource = categoriesNames;
