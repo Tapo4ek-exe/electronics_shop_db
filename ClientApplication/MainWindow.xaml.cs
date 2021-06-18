@@ -169,12 +169,17 @@ namespace ClientApplication
 
             // Обновление списка категорий
             Category[] categories = CategoryRepository.GetAll();
-            List <string> categoriesNames = new List<string>();
-            categoriesNames.Add("Все");
+            List <string> categoriesNames1 = new List<string>();
+            List<string> categoriesNames2 = new List<string>();
+            categoriesNames2.Add("Все");
             foreach (Category category in categories)
-                categoriesNames.Add(category.Name);
-            CategoryСomboBox1.ItemsSource = categoriesNames;
-            CategoryСomboBox2.ItemsSource = categoriesNames;
+            {
+                categoriesNames1.Add(category.Name);
+                categoriesNames2.Add(category.Name);
+
+            }
+            CategoryСomboBox1.ItemsSource = categoriesNames1;
+            CategoryСomboBox2.ItemsSource = categoriesNames2;
         }
 
         private void CategoryRadioButton_Checked(object sender, RoutedEventArgs e) // выбор базы категорий
